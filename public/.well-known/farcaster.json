@@ -1,9 +1,10 @@
 {
   "accountAssociation": {
-    "header": "",
-    "payload": "", 
-    "signature": ""
-  },
+    "header": "eyJmaWQiOjExMzUyNDEsInR5cGUiOiJhdXRoIiwia2V5IjoiMHg0ZjNEREQzZDM0RUNkMTRGMmQ3MzExMTgxZDg5OTA0YTM5ZUMzQkI0In0",
+    "payload": "eyJkb21haW4iOiJuZXdzY2FzdGVyLWVpZ2h0LnZlcmNlbC5hcHAifQ",
+    "signature": "CbzkF5HBjAidAH92IZ3TbUz389OeeYNoDgDWbSwUUMxifK7SPRvj5PsfChrOMW3aaQW8Boi9wQKcPuWz0Cp1LBs="
+  }
+},
   "miniapp": {
     "version": "1",
     "name": "Newscaster",
