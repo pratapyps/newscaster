@@ -1,0 +1,22 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "", 
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Newscaster",
+    "iconUrl": "https://newscaster-six.vercel.app/icon.png",
+    "homeUrl": "https://newscaster-six.vercel.app/",
+    "splashImageUrl": "https://newscaster-six.vercel.app/splash.png",
+    "splashBackgroundColor": "#8B5CF6",
+    "subtitle": "Real-time Farcaster news",
+    "description": "Stay updated with real-time news from multiple Farcaster channels. Bookmark articles to read later and discover trending content.",
+    "primaryCategory": "news-media",
+    "tags": ["news", "farcaster", "miniapp", "realtime", "bookmarks"],
+    "ogTitle": "Newscaster - Real-time Farcaster News",
+    "ogDescription": "Real-time news from Farcaster channels with bookmarking",
+    "buttonTitle": "📰 Open Newscaster"
+  }
+}
