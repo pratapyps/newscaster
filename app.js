@@ -4,35 +4,56 @@ import { sdk } from '@farcaster/miniapp-sdk';
 
 const API_URL = 'https://api.farcaster.xyz/warpcast/v2/casts';
 
-// Application state
 let newsItems = [];
+let isLoading = true;
 
-// Fetch real-time casts from a channel or multiple channels
+// Show skeleton cards while loading
+function renderSkeleton(count = 5) {
+  const appContainer = document.getElementById('app');
+  appContainer.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const skeleton = document.createElement('div');
+    skeleton.className = 'news-card skeleton';
+    skeleton.innerHTML = `
+      <div class="news-image placeholder"></div>
+      <div class="news-content">
+        <div class="news-title placeholder"></div>
+        <div class="news-excerpt placeholder"></div>
+        <div class="news-meta">
+          <span class="news-author placeholder"></span>
+          <span class="news-timestamp placeholder"></span>
+        </div>
+      </div>
+    `;
+    appContainer.appendChild(skeleton);
+  }
+}
+
+// Fetch real-time casts
 async function fetchNews(categories = []) {
+  isLoading = true;
+  renderSkeleton();
   try {
-    // Example: fetch latest casts from multiple channels by name
-    const channelQuery = categories.length
-      ? `?channels=${categories.join(',')}`
-      : '';
+    const channelQuery = categories.length ? `?channels=${categories.join(',')}` : '';
     const response = await fetch(`${API_URL}${channelQuery}&limit=20`);
     const data = await response.json();
-    // Map casts to our news item structure
     newsItems = data.casts.map(cast => ({
       id: cast.hash,
-      title: cast.text.split('\n')[0].slice(0, 100) || 'Newcast Update',
-      excerpt: cast.text.slice(0, 140),
+      title: (cast.text.split('\n')[0] || '').slice(0, 80) || 'No Title',
+      excerpt: cast.text.slice(0, 120),
       author: cast.fidUser.username,
-      channel: cast.parentHash || 'general',
       timestamp: new Date(cast.timestamp).toLocaleTimeString(),
-      imageUrl: cast.embeds?.[0]?.url || '', 
+      imageUrl: cast.embeds?.[0]?.url || '',
       isBookmarked: false,
       isShared: false,
       isLive: true,
       category: cast.channelName || 'All'
     }));
-    renderApp(newsItems);
   } catch (err) {
     console.error('Error fetching news:', err);
+  } finally {
+    isLoading = false;
+    renderApp(newsItems);
   }
 }
 
@@ -44,7 +65,6 @@ function renderApp(items) {
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'news-card';
-
     card.innerHTML = `
       ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.title}" class="news-image"/>` : ''}
       <div class="news-content">
@@ -61,38 +81,25 @@ function renderApp(items) {
         </div>
       </div>
     `;
-
-    // Bookmark toggle
-    const bookmarkBtn = card.querySelector('.bookmark-btn');
-    bookmarkBtn.addEventListener('click', () => {
+    card.querySelector('.bookmark-btn').addEventListener('click', () => {
       item.isBookmarked = !item.isBookmarked;
       renderApp(items);
     });
-
-    // Share simulation
-    const shareBtn = card.querySelector('.share-btn');
-    shareBtn.addEventListener('click', () => {
-      const message = prompt('Add a message to your Farcaster cast:', '');
-      alert(`Shared to Farcaster:\n\n${item.title}\n\nMessage: ${message}`);
+    card.querySelector('.share-btn').addEventListener('click', () => {
+      const message = prompt('Add message to share:', '');
+      alert(`Shared: ${item.title}\nMessage: ${message}`);
       item.isShared = true;
     });
-
     appContainer.appendChild(card);
   });
 }
 
-// Initial fetch and render
-fetchNews(['base', 'crypto', 'tech', 'defi', 'farcaster']);
+// Initial load and polling
+fetchNews(['base','crypto','tech','defi','farcaster']);
+setInterval(() => fetchNews(['base','crypto','tech','defi','farcaster']), 30000);
 
-// Poll every 30 seconds for real-time updates
-setInterval(() => fetchNews(['base', 'crypto', 'tech', 'defi', 'farcaster']), 30000);
-
-// Hide the Farcaster splash screen when ready
+// Hide splash screen when ready
 window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await sdk.actions.ready();
-    console.log('Splash screen hidden');
-  } catch (err) {
-    console.error('Error calling sdk.actions.ready()', err);
-  }
+  try { await sdk.actions.ready(); }
+  catch (err) { console.error(err); }
 });
