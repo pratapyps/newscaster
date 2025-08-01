@@ -1,155 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Newscaster - Real-time News Updates</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Newscaster</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Farcaster Mini App SDK (must load before app.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@latest/dist/miniapp-sdk.min.js"></script>
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="header__content">
-                <h1 class="header__title">📰 Newscaster</h1>
-                <div class="header__actions">
-                    <button class="btn-icon search-btn" id="searchBtn" aria-label="Search">
-                        🔍
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Search Modal -->
-            <div class="search-modal hidden" id="searchModal">
-                <div class="search-modal__content">
-                    <div class="search-input-wrapper">
-                        <input 
-                            type="text" 
-                            class="form-control search-input" 
-                            placeholder="Search news headlines..."
-                            id="searchInput"
-                        >
-                        <button class="btn-icon search-close" id="searchClose">✕</button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Navigation -->
-        <nav class="main-nav">
-            <div class="nav-tabs" id="navTabs">
-                <button class="nav-tab active" data-category="All">All</button>
-                <button class="nav-tab" data-category="Tech">Tech</button>
-                <button class="nav-tab" data-category="Crypto">Crypto</button>
-                <button class="nav-tab" data-category="DeFi">DeFi</button>
-                <button class="nav-tab" data-category="Base">Base</button>
-                <button class="nav-tab" data-category="Farcaster">Farcaster</button>
-                <button class="nav-tab" data-category="NFTs">NFTs</button>
-                <button class="nav-tab" data-category="Degen">Degen</button>
-                <button class="nav-tab" data-category="Bookmarks">💜 Bookmarks</button>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Live Indicator -->
-            <div class="live-indicator hidden" id="liveIndicator">
-                <span class="live-badge">🔴 LIVE</span>
-                <span class="live-text">New updates available</span>
-            </div>
-
-            <!-- News Feed -->
-            <div class="news-feed" id="newsFeed">
-                <!-- News cards will be inserted here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="empty-state hidden" id="emptyState">
-                <div class="empty-state__content">
-                    <div class="empty-state__icon">📰</div>
-                    <h3 class="empty-state__title">No news found</h3>
-                    <p class="empty-state__description">Try selecting a different category or check back later.</p>
-                </div>
-            </div>
-
-            <!-- Bookmarks Empty State -->
-            <div class="empty-state hidden" id="bookmarksEmptyState">
-                <div class="empty-state__content">
-                    <div class="empty-state__icon">💜</div>
-                    <h3 class="empty-state__title">No bookmarks yet</h3>
-                    <p class="empty-state__description">Bookmark articles to read them later by clicking the heart icon.</p>
-                </div>
-            </div>
-
-            <!-- Loading State -->
-            <div class="loading-state" id="loadingState">
-                <div class="loading-skeleton">
-                    <div class="skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-content">
-                            <div class="skeleton-title"></div>
-                            <div class="skeleton-text"></div>
-                            <div class="skeleton-meta"></div>
-                        </div>
-                    </div>
-                    <div class="skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-content">
-                            <div class="skeleton-title"></div>
-                            <div class="skeleton-text"></div>
-                            <div class="skeleton-meta"></div>
-                        </div>
-                    </div>
-                    <div class="skeleton-card">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-content">
-                            <div class="skeleton-title"></div>
-                            <div class="skeleton-text"></div>
-                            <div class="skeleton-meta"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Share Modal -->
-        <div class="share-modal hidden" id="shareModal">
-            <div class="share-modal__backdrop" id="shareBackdrop"></div>
-            <div class="share-modal__content">
-                <div class="share-modal__header">
-                    <h3 class="share-modal__title">Share to Farcaster</h3>
-                    <button class="btn-icon share-modal__close" id="shareClose">✕</button>
-                </div>
-                <div class="share-modal__body">
-                    <div class="share-preview" id="sharePreview">
-                        <!-- Article preview will be inserted here -->
-                    </div>
-                    <div class="form-group">
-                        <label for="shareMessage" class="form-label">Add your message (optional)</label>
-                        <textarea 
-                            id="shareMessage" 
-                            class="form-control" 
-                            rows="3" 
-                            placeholder="Share your thoughts about this article..."
-                        ></textarea>
-                    </div>
-                </div>
-                <div class="share-modal__footer">
-                    <button class="btn btn--secondary" id="shareCancelBtn">Cancel</button>
-                    <button class="btn btn--primary" id="shareConfirmBtn">Share to Farcaster</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Share Success Toast -->
-        <div class="share-toast hidden" id="shareToast">
-            <div class="share-toast__content">
-                <span class="share-toast__icon">✅</span>
-                <span class="share-toast__message">Shared to Farcaster successfully!</span>
-            </div>
-        </div>
+  <!-- Header -->
+  <header class="header">
+    <div class="header__content">
+      <h1 class="header__title">📰 Newscaster</h1>
+      <button class="btn-icon search-btn" id="searchBtn" aria-label="Search">🔍</button>
     </div>
+    <!-- Search Modal -->
+    <div class="search-modal hidden" id="searchModal">
+      <div class="search-modal__content">
+        <div class="search-input-wrapper">
+          <input type="text" id="searchInput" class="form-control search-input" placeholder="Search news headlines..." />
+          <button class="btn-icon search-close" id="searchClose">✕</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-    <script src="app.js"></script>
+  <!-- Category Tabs -->
+  <nav class="main-nav">
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-category="All">All</button>
+      <button class="nav-tab" data-category="Tech">Tech</button>
+      <button class="nav-tab" data-category="Crypto">Crypto</button>
+      <button class="nav-tab" data-category="DeFi">DeFi</button>
+      <button class="nav-tab" data-category="Base">Base</button>
+      <button class="nav-tab" data-category="Farcaster">Farcaster</button>
+      <button class="nav-tab" data-category="NFTs">NFTs</button>
+      <button class="nav-tab" data-category="Degen">Degen</button>
+      <button class="nav-tab" data-category="Bookmarks">Bookmarks</button>
+    </div>
+  </nav>
+
+  <!-- App Container -->
+  <main id="app" class="app-container">
+    <!-- News cards or skeletons render here -->
+  </main>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
 </body>
 </html>
