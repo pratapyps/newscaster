@@ -1,6 +1,7 @@
 // app.js
 
-import { sdk } from '@farcaster/miniapp-sdk';
+// Use the global SDK from the script tag in index.html
+const sdk = window.miniappSdk;
 
 console.log('🛠️ App loading…');
 window.addEventListener('error', e => console.error('Unhandled error:', e.error));
@@ -13,7 +14,7 @@ const POLL_INTERVAL = 60000; // 1 minute
 let newsItems = [];
 let bookmarks = [];
 
-// Skeleton for loading state
+// Show skeletons while loading
 function renderSkeleton(count = 5) {
   const app = document.getElementById('app');
   app.innerHTML = '';
@@ -48,12 +49,12 @@ async function fetchNews() {
       id: item.link || 'id-' + idx,
       title: item.title,
       excerpt: item.description || '',
-      author: item.source_id || item.creator?.[0] || 'News',
+      author: item.source_id || (item.creator && item.creator[0]) || 'News',
       timestamp: new Date(item.pubDate).toLocaleTimeString(),
       imageUrl: item.image_url || '',
       sourceUrl: item.link,
       isBookmarked: bookmarks.includes(item.link || 'id-' + idx),
-      category: item.category?.[0] || 'General'
+      category: item.category && item.category[0] ? item.category[0] : 'General'
     }));
     renderApp();
   } catch (err) {
@@ -73,4 +74,40 @@ function renderApp() {
   newsItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'news-card';
-    card.innerHTML =
+    card.innerHTML = `
+      ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.title}" class="news-image"/>` : ''}
+      <div class="news-content">
+        <h2 class="news-title">${item.title}</h2>
+        <p class="news-excerpt">${item.excerpt}</p>
+        <div class="news-meta">
+          <span class="news-author">${item.author}</span>
+          <span class="news-timestamp">${item.timestamp}</span>
+          <span class="badge">${item.category}</span>
+        </div>
+        <div class="news-actions">
+          <button class="btn bookmark-btn">${item.isBookmarked ? '💖' : '🤍'}</button>
+          <a href="${item.sourceUrl}" target="_blank" rel="noopener" class="btn external-btn">↗</a>
+        </div>
+      </div>
+    `;
+    card.querySelector('.bookmark-btn').addEventListener('click', () => {
+      if (item.isBookmarked) bookmarks = bookmarks.filter(id => id !== item.id);
+      else bookmarks.push(item.id);
+      renderApp();
+    });
+    app.appendChild(card);
+  });
+}
+
+// Setup polling and initialize
+window.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOMContentLoaded event fired');
+  try {
+    await sdk.actions.ready();
+    console.log('Splash screen hidden');
+  } catch (err) {
+    console.error('Error calling sdk.actions.ready():', err);
+  }
+  fetchNews();
+  setInterval(fetchNews, POLL_INTERVAL);
+});
