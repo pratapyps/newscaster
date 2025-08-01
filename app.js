@@ -5,20 +5,22 @@ import { sdk } from '@farcaster/miniapp-sdk';
 console.log('🛠️ App loading…');
 window.addEventListener('error', e => console.error('Unhandled error:', e.error));
 
-const API_URL = 'https://api.farcaster.xyz/warpcast/v2/casts';
-const CATEGORIES = ['All', 'Tech', 'Crypto', 'DeFi', 'Base', 'Farcaster', 'NFTs', 'Degen'];
+const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines';
+const NEWS_API_KEY = 'bc419587b5ac425b99ed67a265f50946';    // Replace with your free NewsAPI.org key
+const SOURCES      = ['techcrunch','forbes','techradar','yahoo'];  
+const POLL_INTERVAL = 30000;  // 30s
 
 let newsItems = [];
 let bookmarks = [];
 
-// Render skeleton placeholders
+// Show skeleton placeholders while loading
 function renderSkeleton(count = 5) {
   const app = document.getElementById('app');
   app.innerHTML = '';
   for (let i = 0; i < count; i++) {
-    const skeleton = document.createElement('div');
-    skeleton.className = 'news-card skeleton';
-    skeleton.innerHTML = `
+    const skel = document.createElement('div');
+    skel.className = 'news-card skeleton';
+    skel.innerHTML = `
       <div class="news-image placeholder"></div>
       <div class="news-content">
         <div class="news-title placeholder"></div>
@@ -29,125 +31,86 @@ function renderSkeleton(count = 5) {
         </div>
       </div>
     `;
-    app.appendChild(skeleton);
+    app.appendChild(skel);
   }
 }
 
-// Fetch live Farcaster casts
-async function fetchNews(category = 'All') {
+// Fetch top headlines from free news sources
+async function fetchNews() {
   renderSkeleton();
   try {
-    const channels = category === 'All' ? CATEGORIES.slice(1) : [category];
-    const channelQuery = channels.map(c => c.toLowerCase()).join(',');
-    const res = await fetch(`${API_URL}?channels=${channelQuery}&limit=20`);
-    if (!res.ok) throw new Error(res.statusText);
-    const data = await res.json();
-    newsItems = data.casts.map(c => ({
-      id: c.hash,
-      title: (c.text.split('\n')[0] || '').slice(0, 80) || 'No Title',
-      excerpt: c.text.slice(0, 120),
-      author: c.fidUser.username,
-      timestamp: new Date(c.timestamp).toLocaleTimeString(),
-      imageUrl: c.embeds?.[0]?.url || '',
-      isBookmarked: bookmarks.includes(c.hash),
-      category: c.channelName || 'All'
+    const url = `${NEWS_API_URL}?sources=${SOURCES.join(',')}&pageSize=20&apiKey=${NEWS_API_KEY}`;
+    console.log('Fetching news from:', url);
+    const res = await fetch(url);
+    console.log('Response status:', res.status);
+    const body = await res.text();
+    console.log('Raw body:', body);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const data = JSON.parse(body);
+    console.log('Parsed data:', data);
+    newsItems = data.articles.map((a, idx) => ({
+      id: `ext-${idx}`,
+      title: a.title,
+      excerpt: a.description || '',
+      author: a.author || a.source.name,
+      timestamp: new Date(a.publishedAt).toLocaleTimeString(),
+      imageUrl: a.urlToImage || '',
+      sourceUrl: a.url,
+      isBookmarked: bookmarks.includes(`ext-${idx}`)
     }));
     renderApp();
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error('Error fetching news:', err);
     document.getElementById('app').innerHTML = `<div class="error">Error loading news: ${err.message}</div>`;
   }
 }
 
-// Render news cards or bookmarks
+// Render news cards with bookmark & share
 function renderApp() {
   const app = document.getElementById('app');
   app.innerHTML = '';
-
-  const activeTab = document.querySelector('.nav-tab.active').dataset.category;
-  const items = activeTab === 'Bookmarks'
-    ? newsItems.filter(n => n.isBookmarked)
-    : newsItems.filter(n => activeTab === 'All' || n.category === activeTab);
-
-  if (!items.length) {
-    app.innerHTML = '<p class="empty">No articles to display.</p>';
+  if (!newsItems.length) {
+    app.innerHTML = '<p class="empty">No news articles available.</p>';
     return;
   }
-
-  items.forEach(item => {
+  newsItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'news-card';
     card.innerHTML = `
-      ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.title}" class="news-image">` : ''}
+      ${item.imageUrl
+        ? `<img src="${item.imageUrl}" alt="${item.title}" class="news-image"/>`
+        : ''}
       <div class="news-content">
         <h2 class="news-title">${item.title}</h2>
         <p class="news-excerpt">${item.excerpt}</p>
         <div class="news-meta">
           <span class="news-author">${item.author}</span>
           <span class="news-timestamp">${item.timestamp}</span>
-          ${item.category !== 'All' ? `<span class="badge">${item.category}</span>` : ''}
         </div>
         <div class="news-actions">
           <button class="btn bookmark-btn">${item.isBookmarked ? '💖' : '🤍'}</button>
-          <button class="btn share-btn">📤</button>
+          <a href="${item.sourceUrl}" target="_blank" rel="noopener" class="btn external-btn">↗</a>
         </div>
       </div>
     `;
-
     card.querySelector('.bookmark-btn').addEventListener('click', () => {
       if (item.isBookmarked) bookmarks = bookmarks.filter(id => id !== item.id);
       else bookmarks.push(item.id);
-      fetchNews(activeTab);
+      fetchNews();
     });
-
-    card.querySelector('.share-btn').addEventListener('click', () => {
-      const msg = prompt('Add a message to share:', '');
-      alert(`Shared: ${item.title}\nMessage: ${msg}`);
-    });
-
     app.appendChild(card);
   });
 }
 
-// Initialize category tabs
-function initTabs() {
-  const tabs = document.getElementById('navTabs').children;
-  Array.from(tabs).forEach(tab => {
-    tab.addEventListener('click', () => {
-      Array.from(tabs).forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      fetchNews(tab.dataset.category);
-    });
-  });
-}
-
-// Search functionality
-function initSearch() {
-  document.getElementById('searchBtn').addEventListener('click', () => {
-    document.getElementById('searchModal').classList.remove('hidden');
-  });
-  document.getElementById('searchClose').addEventListener('click', () => {
-    document.getElementById('searchModal').classList.add('hidden');
-  });
-  document.getElementById('searchInput').addEventListener('input', e => {
-    const query = e.target.value.toLowerCase();
-    newsItems = newsItems.filter(n => n.title.toLowerCase().includes(query));
-    renderApp();
-  });
-}
-
-// Hide Farcaster splash screen
+// Initialize and poll for real-time updates
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('DOMContentLoaded event fired');
   try {
     await sdk.actions.ready();
-    console.log('Splash screen hidden (ready called)');
+    console.log('Splash screen hidden');
   } catch (err) {
     console.error('Error calling sdk.actions.ready():', err);
   }
-
-  initTabs();
-  initSearch();
   fetchNews();
-  setInterval(() => fetchNews(document.querySelector('.nav-tab.active').dataset.category), 30000);
+  setInterval(fetchNews, POLL_INTERVAL);
 });
