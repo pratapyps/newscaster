@@ -3,21 +3,16 @@
     "header": "eyJmaWQiOjExMzUyNDEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5MEVBQzAzOTdFQjUyMzIwOGMzNTNjMjdlN2NDNzk0YzcyMEIwNWU5In0",
     "payload": "eyJkb21haW4iOiJuZXdzY2FzdGVyLWVpZ2h0LnZlcmNlbC5hcHAifQ",
     "signature": "MHgzY2NmM2RjZjI3YjhlYTNlNDhiZmJmNDI0MzQ5N2FiYjZhNmVhNDMzYjZiNTM1ZmIyZjE3Y2MzYmJjZGRiMTkyN2VhODBiYmQ2ZmQ3ZmI1OWFmY2UxMmQyZDE5YjIwMzU5ZGFiMWM0YzVkMGIzZWNjNjQzNGIwYjE0NjhjNmY0MjFi"
-  }
-}
-  "miniapp": {
+  },
+  "frame": {
     "version": "1",
-    "name": "Newscaster",
-    "iconUrl": "https://newscaster-six.vercel.app/icon.png",
-    "homeUrl": "https://newscaster-six.vercel.app/",
-    "splashImageUrl": "https://newscaster-six.vercel.app/splash.png",
-    "splashBackgroundColor": "#8B5CF6",
-    "subtitle": "Real-time Farcaster news",
-    "description": "Stay updated with real-time news from multiple Farcaster channels. Bookmark articles to read later and discover trending content.",
-    "primaryCategory": "news-media",
-    "tags": ["news", "farcaster", "miniapp", "realtime", "bookmarks"],
-    "ogTitle": "Newscaster - Real-time Farcaster News",
-    "ogDescription": "Real-time news from Farcaster channels with bookmarking",
-    "buttonTitle": "📰 Open Newscaster"
+    "name": "Example Frame",
+    "iconUrl": "https://newscaster-eight.vercel.app/icon.png",
+    "homeUrl": "https://newscaster-eight.vercel.app",
+    "imageUrl": "https://newscaster-eight.vercel.app/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://newscaster-eight.vercel.app/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://newscaster-eight.vercel.app/api/webhook"
   }
 }
